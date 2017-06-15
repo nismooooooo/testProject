@@ -26,26 +26,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+class GenerateObjects {
 
-public class GenerateObjects {
-
-
-    public void createTestProject(String entitiesCount, String attributesCount) {
+    void createTestProject(String entities, String attributes) {
 
         DataChannelDescriptor dataChannelDescriptor = new DataChannelDescriptor();
         dataChannelDescriptor.setName(NameBuilder.builder(dataChannelDescriptor).name());
         Project project1 = new Project(new ConfigurationTree<ConfigurationNode>(dataChannelDescriptor));
         StringRandomGenerator generator = new StringRandomGenerator();
-        int COUNT_ENTITIES = Integer.parseInt(entitiesCount);
-        int COUNT_ATTRIBUTES = Integer.parseInt(attributesCount);
         DataMap dataMap = new DataMap();
-        for (int i = 1; i <= COUNT_ENTITIES; i++) {
+        for (int i = 1; i <= Integer.parseInt(entities); i++) {
             DbEntity dbEntity = new DbEntity(generator.generateRandomString());
             DbAttribute dbAttribute = new DbAttribute("id");
             dbAttribute.setPrimaryKey(true);
             dbAttribute.setMandatory(true);
             dbAttribute.setType(Types.INTEGER);
-            for (int j = 1; j <= COUNT_ATTRIBUTES; j++) {
+            for (int j = 1; j <= Integer.parseInt(attributes); j++) {
                 DbAttribute dbAttr = new DbAttribute(generator.generateRandomString());
                 dbAttr.setType(Types.VARCHAR);
                 dbAttr.setMaxLength(255);
@@ -55,11 +51,11 @@ public class GenerateObjects {
             dataMap.addDbEntity(dbEntity);
             ObjEntity objEntity = new ObjEntity(generator.generateRandomString());
             objEntity.setDbEntity(dbEntity);
-            List<String> namesOfDbAttributes = new ArrayList<String>();
+            List<String> namesOfDbAttributes = new ArrayList<>();
             for (DbAttribute dbAttr : dbEntity.getAttributes()) {
                 namesOfDbAttributes.add(dbAttr.getName());
             }
-            for (int j = 0; j <= COUNT_ATTRIBUTES; j++) {
+            for (int j = 0; j <= Integer.parseInt(attributes); j++) {
                 ObjAttribute objAttribute = new ObjAttribute(generator.generateRandomString());
                 if (!namesOfDbAttributes.get(j).equals("id")) {
                     objAttribute.setDbAttributePath(namesOfDbAttributes.get(j));
@@ -73,7 +69,7 @@ public class GenerateObjects {
         DataChannelDescriptor descriptor = (DataChannelDescriptor) project1.getRootNode();
         dataMap.setName(NameBuilder.builder(dataMap, descriptor).name());
         descriptor.getDataMaps().add(dataMap);
-        Injector injector = DIBootstrap.createInjector(appendModules(new ArrayList<Module>()));
+        Injector injector = DIBootstrap.createInjector(appendModules(new ArrayList<>()));
         ProjectSaver saver = injector.getInstance(ProjectSaver.class);
         URLResource res = null;
         try {
@@ -84,7 +80,7 @@ public class GenerateObjects {
         saver.saveAs(project1, res);
     }
 
-    protected Collection<Module> appendModules(Collection<Module> modules) {
+    private Collection<Module> appendModules(Collection<Module> modules) {
         modules.add(new ServerModule("CayenneModeler"));
         modules.add(new ProjectModule());
         modules.add(new DbSyncModule());
